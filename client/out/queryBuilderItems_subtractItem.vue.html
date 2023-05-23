@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: queryBuilderItems/subtractItem.vue</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: queryBuilderItems/subtractItem.vue</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>&lt;template lang="">
+  &lt;div class="query-item subtract">
+    &lt;div class="query-item-main">
+      &lt;v-menu open-on-hover>
+        &lt;template v-slot:activator="{ props }">
+          &lt;v-btn class="dropdown-btn" v-bind="props"> + &lt;/v-btn>
+        &lt;/template>
+
+        &lt;v-list>
+          &lt;v-list-item
+            @click=";(operation = item.id), addNewChildQuery(item.id)"
+            class="dropdown-item"
+            v-for="(item, index) in operatorsList"
+            :key="index"
+          >
+            &lt;v-list-item-title>{{ item.title }}&lt;/v-list-item-title>
+          &lt;/v-list-item>
+        &lt;/v-list>
+      &lt;/v-menu>
+      &lt;div class="query-type">
+        {{ query.type }}
+      &lt;/div>
+      &lt;v-text-field
+        label="New field"
+        variant="solo"
+        density="compact"
+        class="query-value"
+        v-model="newField"
+      >&lt;/v-text-field>
+      &lt;v-autocomplete
+        :disabled="!newField"
+        label="First field"
+        variant="solo"
+        density="compact"
+        class="query-value"
+        :items="labelsListFirstFieldShow"
+        v-model="firstValue"
+      >&lt;/v-autocomplete>
+      &lt;v-autocomplete
+        :disabled="!firstValue"
+        label="Second field"
+        variant="solo"
+        density="compact"
+        class="query-value"
+        :items="labelsListSecondFieldShow"
+        v-model="secondValue"
+      >&lt;/v-autocomplete>
+      &lt;v-btn class="clear-btn" icon="mdi-close" @click="clearSubtractQuery">
+      &lt;/v-btn>
+      &lt;v-alert
+        v-if="!secondValue"
+        border
+        class="error-notify"
+        type="error"
+        icon="mdi-alert-circle"
+        :title="errorTitle"
+        density="compact"
+        color="#f4154d"
+      >&lt;/v-alert>
+    &lt;/div>
+    &lt;v-btn
+      v-if="query.delete"
+      class="delete-btn animate__fadeInRight animate__animated"
+      icon="mdi-delete"
+      @click="deleteQuery"
+    >
+    &lt;/v-btn>
+  &lt;/div>
+&lt;/template>
+&lt;script>
+import { getLabelsList } from '@/Api'
+/**
+ * Компонент, що відповідає за створення операції агрегування $subtract та задання відповідних параметрів
+ * @vue/component
+ * @module subtractItem
+ * @requires getLabelsList - Функція, що відповідає за надсилання запиту на сервер, для отримання доступних полів з бази даних.
+ */
+export default {
+  /**
+   * @typedef {Object} ComponentProps
+   * @property {Object} query - Об'єкт конкретного запиту, що зберігає в собі необхідну інформацію про збережений запит.
+   * Відображається у випадку, якщо після повторного входу на сторінку є збереженні дані з попереднього разу.
+   * @property {Object} item - Об'єкт блоку, що зберігає інформацію про перелік запитів.
+   * @property {Array} databaseList - Список баз даних, які є доступними для вибору.
+   * @property {Array} operatorsList - Список доступних операторів агрегації.
+   */
+  /**
+   * Обчислювані властивості для компонента, які повертають значення на основі інших властивостей.
+   * @typedef {Object} ComponentComputed
+   * @property {string} errorTitle - Обчислювана властивість, що повертає текст помилки в залежності від заповнених полів
+   * @property {string} databaseName - Обчислювана властивість, що буде динамічно повертати назву бази даних для поточного об'єкту блоку
+   */
+  created() {
+    if (this.query.firstValue) {
+      this.firstValue = this.query.firstValue
+    }
+    if (this.query.secondValue) {
+      this.secondValue = this.query.secondValue
+    } else {
+      this.$store.commit('changeErrorFixed', {
+        id: this.query.queryId,
+        value: false,
+      })
+    }
+    if (this.query.newField) {
+      this.newField = this.query.newField
+    }
+    let parentCollectionName = this.item.queries[0].value
+    getLabelsList(parentCollectionName).then(res => {
+      if (res.status === 200) {
+        this.labelsListFirstField = Object.keys(res.data.labelsObj)
+        this.labelsListSecondField = Object.keys(res.data.labelsObj)
+        this.labelsListFirstFieldShow = Object.keys(res.data.labelsObj)
+        this.labelsListSecondFieldShow = Object.keys(res.data.labelsObj)
+      }
+    })
+  },
+  computed: {
+    databaseName() {
+      return this.item.queries[0].value
+    },
+    errorTitle() {
+      if (!this.newField) {
+        return 'New field required'
+      } else if (this.newField &amp;&amp; !this.firstValue) {
+        return 'Operation required'
+      } else if (!this.values) {
+        return 'Values required'
+      }
+      return null
+    },
+  },
+  data() {
+    return {
+      /**
+       * Стан, що відповідає за збереження доступних полів(статичні), що отримані з серверу для першого поля вибору.
+       * @type {Array}
+       */
+      labelsListFirstField: [],
+      /**
+       * Стан, що відповідає за збереження доступних полів(статичні), що отримані з серверу для другого поля вибору, з даними, що не перетинаються з першим полем.
+       * @type {Array}
+       */
+      labelsListSecondField: [],
+      /**
+       * Стан, що відповідає за збереження доступних полів, що будуть відображені для першого поля.
+       * @type {Array}
+       */
+      labelsListFirstFieldShow: [],
+      /**
+       * Стан, що відповідає за збереження доступних полів, що будуть відображені для другого поля.
+       * @type {Array}
+       */
+      labelsListSecondFieldShow: [],
+      /**
+       * Стан, що відповідає за збереження типу операції, що буде створюватися наступною.
+       * @type {string|null}
+       */
+      operation: null,
+      /**
+       * Стан, що відповідає за значення newField для операції агрегування $subtract, яке в свою чергу містить назву нового поля в якому будуть міститися результати операції.
+       * @type {string|null}
+       */
+      newField: null,
+      /**
+       * Стан, що відповідає за значення firstValue для операції агрегування $subtract, яке в свою чергу буде зберігате обране перше поле.
+       * @type {string|null}
+       */
+      firstValue: null,
+      /**
+       * Стан, що відповідає за значення firstValue для операції агрегування $subtract, яке в свою чергу буде зберігате обране друге поле.
+       * @type {string|null}
+       */
+      secondValue: null,
+    }
+  },
+  /**
+   * Спостерігач за полем newField.
+   * @type {string|null}
+   * @property {function} handler - Обробник зміни поля newField.
+   */
+  /**
+   * Спостерігач за полем firstValue.
+   * @type {string|null}
+   * @property {function} handler - Обробник зміни поля firstValue.
+   */
+  /**
+   * Спостерігач за полем secondValue.
+   * @type {string|null}
+   * @property {function} handler - Обробник зміни поля secondValue.
+   */
+  /**
+   * Спостерігач за полем databaseName, що є обчислюваною властивістю, та динамічно зберігає поточну базу даних.
+   * @type {string|null}
+   * @property {function} handler - Обробник зміни поля databaseName.
+   */
+  watch: {
+    newField: function (newValue) {
+      this.changeNewField(newValue)
+    },
+    firstValue: function (newValue) {
+      this.changeFirstValue(newValue)
+    },
+    secondValue: function (newValue) {
+      if (newValue) {
+        this.$store.commit('changeErrorFixed', {
+          id: this.query.queryId,
+          value: true,
+        })
+      } else {
+        this.$store.commit('changeErrorFixed', {
+          id: this.query.queryId,
+          value: false,
+        })
+      }
+      this.changeSecondValue(newValue)
+    },
+    databaseName: function (newValue) {
+      getLabelsList(newValue).then(res => {
+        if (res.status === 200) {
+          this.labelsListFirstField = Object.keys(res.data.labelsObj)
+          this.labelsListSecondField = Object.keys(res.data.labelsObj)
+          this.labelsListFirstFieldShow = Object.keys(res.data.labelsObj)
+          this.labelsListSecondFieldShow = Object.keys(res.data.labelsObj)
+          this.firstValue = null
+          this.secondValue = null
+          this.newField = null
+        }
+      })
+    },
+  },
+  methods: {
+    /**
+     * Функція, що змінює поле newField в об'єкті запиту subtract для об'єкту блока
+     * @param {string} newValue - Нове значення поля label
+     */
+    changeNewField(newValue) {
+      this.$emit('changeNewField', this.item.id, this.query.queryId, newValue)
+    },
+    /**
+     * Функція, що змінює поле firstField в об'єкті запиту subtract для об'єкту блока
+     * @param {string} newValue - Нове значення поля label
+     */
+    changeFirstValue(newValue) {
+      this.labelsListSecondFieldShow = this.labelsListSecondField.filter(
+        item => item !== newValue &amp;&amp; item !== this.firstValue
+      )
+      this.$emit('changeFirstValue', this.item.id, this.query.queryId, newValue)
+    },
+    /**
+     * Функція, що змінює поле secondField в об'єкті запиту subtract для об'єкту блока
+     * @param {string} newValue - Нове значення поля label
+     */
+    changeSecondValue(newValue) {
+      this.labelsListFirstFieldShow = this.labelsListFirstField.filter(
+        item => item !== newValue &amp;&amp; item !== this.secondValue
+      )
+      this.$emit(
+        'changeSecondValue',
+        this.item.id,
+        this.query.queryId,
+        newValue
+      )
+    },
+    /**
+     * Функція, що очищає поля поточного запиту subtract для повторного заповнення
+     */
+    clearSubtractQuery() {
+      this.newField = null
+      this.firstValue = null
+      this.secondValue = null
+      this.$emit('clearSubtractQuery', this.item.id, this.query.queryId)
+    },
+    /**
+     * Функція яка відповідає за додавання нового запиту до об'єкту блоку
+     * @param {number} operation - Тип нової операції агрегування
+     */
+    addNewChildQuery(operation) {
+      if (!operation) {
+        return
+      }
+      if (operation === 1) {
+        this.$emit('addNewChildQuery', operation, true)
+      } else {
+        this.$emit('addNewChildQuery', operation, false, this.item.id)
+      }
+      this.operation = null
+    },
+    deleteQuery() {
+      this.$emit('deleteQuery', this.query.queryId, this.item.id)
+    },
+  },
+  props: {
+    tab: {
+      type: Number,
+    },
+    query: {
+      type: Object,
+    },
+    item: {
+      type: Object,
+    },
+    databaseList: {
+      type: Array,
+    },
+    operatorsList: {
+      type: Array,
+    },
+  },
+}
+&lt;/script>
+&lt;style lang="scss">&lt;/style>
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-limitItem.html">limitItem</a></li><li><a href="module-mainItem.html">mainItem</a></li><li><a href="module-matchItem.html">matchItem</a></li><li><a href="module-projectItem.html">projectItem</a></li><li><a href="module-queryBuilderItem.html">queryBuilderItem</a></li><li><a href="module-sampleItem.html">sampleItem</a></li><li><a href="module-sortItem.html">sortItem</a></li><li><a href="module-subtractItem.html">subtractItem</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Tue May 23 2023 12:17:06 GMT+0300 (Восточная Европа, летнее время)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

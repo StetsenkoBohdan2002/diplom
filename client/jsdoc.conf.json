@@ -1,0 +1,16 @@
+{
+  "plugins": ["plugins/markdown", "node_modules/jsdoc-vuejs"],
+  "source": {
+    "include": ["src"],
+    "includePattern": ".+\\.vue$",
+    "excludePattern": "(^|\\/|\\\\)_(?!lang|socket)"
+  },
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc", "closure"]
+  },
+  "opts": {
+    "recurse": true,
+    "destination": "./out"
+  }
+}

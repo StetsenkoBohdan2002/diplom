@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: projectItem.vue</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: projectItem.vue</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>&lt;template lang="">
+  &lt;div class="query-item match">
+    &lt;div class="query-item-main">
+      &lt;v-menu open-on-hover>
+        &lt;template v-slot:activator="{ props }">
+          &lt;v-btn class="dropdown-btn" v-bind="props"> + &lt;/v-btn>
+        &lt;/template>
+
+        &lt;v-list>
+          &lt;v-list-item
+            @click=";(operation = item.id), addNewChildQuery(item.id)"
+            class="dropdown-item"
+            v-for="(item, index) in operatorsList"
+            :key="index"
+          >
+            &lt;v-list-item-title>{{ item.title }}&lt;/v-list-item-title>
+          &lt;/v-list-item>
+        &lt;/v-list>
+      &lt;/v-menu>
+      &lt;div class="query-type">
+        {{ query.type }}
+      &lt;/div>
+      &lt;v-autocomplete
+        label="Labels"
+        variant="solo"
+        density="compact"
+        class="query-value"
+        :items="labelsList"
+        v-model="labels"
+        multiple
+      >&lt;/v-autocomplete>
+      &lt;v-btn class="clear-btn" icon="mdi-close" @click="clearProjectLables">
+      &lt;/v-btn>
+      &lt;v-alert
+        v-if="!labels"
+        border
+        class="error-notify"
+        type="error"
+        icon="mdi-alert-circle"
+        title="Labels required"
+        density="compact"
+        color="#f4154d"
+      >&lt;/v-alert>
+    &lt;/div>
+    &lt;v-btn
+      v-if="query.delete"
+      class="delete-btn animate__fadeInRight animate__animated"
+      icon="mdi-delete"
+      @click="deleteQuery"
+    >
+    &lt;/v-btn>
+  &lt;/div>
+&lt;/template>
+&lt;script>
+import { getLabelsList } from '@/Api'
+/**
+ * Компонент, що відповідає за створення операції агрегування $project та задання відповідних параметрів
+ * @vue/component
+ * @module projectItem
+ * @requires getLabelsList - Функція, що відповідає за надсилання запиту на сервер, для отримання доступних полів з бази даних.
+ */
+export default {
+  /**
+   * @typedef {Object} ComponentProps
+   * @property {Object} query - Об'єкт конкретного запиту, що зберігає в собі необхідну інформацію про збережений запит.
+   * Відображається у випадку, якщо після повторного входу на сторінку є збереженні дані з попереднього разу.
+   * @property {Object} item - Об'єкт блоку, що зберігає інформацію про перелік запитів.
+   * @property {Array} databaseList - Список баз даних, які є доступними для вибору.
+   * @property {Array} operatorsList - Список доступних операторів агрегації.
+   */
+  /**
+   * Обчислювані властивості для компонента, які повертають значення на основі інших властивостей.
+   * @typedef {Object} ComponentComputed
+   * @property {string} databaseName - Обчислювана властивість, що буде динамічно повертати назву бази даних для поточного об'єкту блоку
+   */
+  computed: {
+    databaseName() {
+      return this.item.queries[0].value
+    },
+  },
+  data() {
+    return {
+      /**
+       * Стан, що відповідає за збереження типу операції, що буде створюватися наступною.
+       * @type {string|null}
+       */
+      operation: null,
+      /**
+       * Стан, що відповідає за значення labels для операції агрегування $match, яке в свою чергу масив містить полів для виконання пошуку.
+       * @type {Array|null}
+       */
+      labels: null,
+      /**
+       * Стан, що відповідає за збереження доступних полів, що отримані з серверу.
+       * @type {Array}
+       */
+      labelsList: [],
+    }
+  },
+  /**
+   * Спостерігач за полем labels.
+   * @type {Array|null}
+   * @property {function} handler - Обробник зміни поля labels.
+   */
+  /**
+   * Спостерігач за полем databaseName, що є обчислюваною властивістю, та динамічно зберігає поточну базу даних.
+   * @type {string|null}
+   * @property {function} handler - Обробник зміни поля databaseName.
+   */
+  watch: {
+    labels: function (newValue) {
+      if (newValue &amp;&amp; newValue.length > 0) {
+        this.$store.commit('changeErrorFixed', {
+          id: this.query.queryId,
+          value: true,
+        })
+      } else if (!newValue || newValue.length &lt; 1) {
+        this.$store.commit('changeErrorFixed', {
+          id: this.query.queryId,
+          value: false,
+        })
+      }
+      this.changeProjectLables(newValue)
+    },
+    databaseName: function (newValue) {
+      getLabelsList(newValue).then(res => {
+        if (res.status === 200) {
+          this.labelsList = Object.keys(res.data.labelsObj)
+          this.labels = null
+        }
+      })
+    },
+  },
+  created() {
+    let parentCollectionName = this.item.queries[0].value
+    if (this.query.labels) {
+      this.labels = this.query.labels
+    } else {
+      this.$store.commit('changeErrorFixed', {
+        id: this.query.queryId,
+        value: false,
+      })
+    }
+    getLabelsList(parentCollectionName).then(res => {
+      if (res.status === 200) {
+        this.labelsList = Object.keys(res.data.labelsObj)
+      }
+    })
+  },
+  methods: {
+    /**
+     * Функція, що видаляє повністю поточний запит з об'єкту блоку
+     */
+    deleteQuery() {
+      this.$emit('deleteQuery', this.query.queryId, this.item.id)
+    },
+    /**
+     * Функція, що змінює поле labels в об'єкті запиту project для об'єкту блока
+     * @param {string} newValue - Нове значення поля labels
+     */
+    changeProjectLables(newValue) {
+      this.$emit(
+        'changeProjectLables',
+        this.item.id,
+        this.query.queryId,
+        newValue
+      )
+    },
+    /**
+     * Функція, що очищає поля поточного запиту project для повторного заповнення
+     */
+    clearProjectLables() {
+      this.labels = null
+      this.$emit('changeProjectLables', this.item.id, this.query.queryId, null)
+    },
+    /**
+     * Функція яка відповідає за додавання нового запиту до об'єкту блоку
+     * @param {number} operation - Тип нової операції агрегування
+     */
+    addNewChildQuery(operation) {
+      if (!operation) {
+        return
+      }
+      if (operation === 1) {
+        this.$emit('addNewChildQuery', operation, true)
+      } else {
+        this.$emit('addNewChildQuery', operation, false, this.item.id)
+      }
+      this.operation = null
+      // this.$refs.operationSelect.blur()
+    },
+  },
+  props: {
+    query: {
+      type: Object,
+    },
+    item: {
+      type: Object,
+    },
+    databaseList: {
+      type: Array,
+    },
+    operatorsList: {
+      type: Array,
+    },
+  },
+}
+&lt;/script>
+&lt;style lang="scss">&lt;/style>
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-limitItem.html">limitItem</a></li><li><a href="module-mainItem.html">mainItem</a></li><li><a href="module-matchItem.html">matchItem</a></li><li><a href="module-projectItem.html">projectItem</a></li><li><a href="module-sampleItem.html">sampleItem</a></li><li><a href="module-sortItem.html">sortItem</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Fri May 19 2023 00:06:35 GMT+0300 (Восточная Европа, летнее время)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

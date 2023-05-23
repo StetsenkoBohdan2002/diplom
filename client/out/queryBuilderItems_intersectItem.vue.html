@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: queryBuilderItems/intersectItem.vue</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: queryBuilderItems/intersectItem.vue</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>&lt;template lang="">
+  &lt;div class="query-item match">
+    &lt;div class="query-item-main">
+      &lt;v-menu open-on-hover>
+        &lt;template v-slot:activator="{ props }">
+          &lt;v-btn class="dropdown-btn" v-bind="props"> + &lt;/v-btn>
+        &lt;/template>
+
+        &lt;v-list>
+          &lt;v-list-item
+            @click=";(operation = item.id), addNewChildQuery(item.id)"
+            class="dropdown-item"
+            v-for="(item, index) in operatorsList"
+            :key="index"
+          >
+            &lt;v-list-item-title>{{ item.title }}&lt;/v-list-item-title>
+          &lt;/v-list-item>
+        &lt;/v-list>
+      &lt;/v-menu>
+      &lt;div class="query-type">
+        {{ query.type }}
+      &lt;/div>
+      &lt;v-autocomplete
+        label="Collection"
+        variant="solo"
+        density="compact"
+        class="query-value"
+        :items="chooseDatabaseList"
+        v-model="collection"
+      >&lt;/v-autocomplete>
+      &lt;v-autocomplete
+        label="Field main database"
+        :disabled="!collection"
+        variant="solo"
+        density="compact"
+        class="query-value"
+        :items="labelsListMain"
+        v-model="comparisonFieldMain"
+      >&lt;/v-autocomplete>
+      &lt;v-autocomplete
+        :disabled="!comparisonFieldMain"
+        label="Field choosen database"
+        variant="solo"
+        density="compact"
+        class="query-value"
+        :items="labelsListAdd"
+        v-model="comparisonFieldAdditional"
+      >&lt;/v-autocomplete>
+      &lt;v-btn
+        class="clear-btn"
+        icon="mdi-close"
+        @click="clearIntersectCollection"
+      >
+      &lt;/v-btn>
+      &lt;v-alert
+        v-if="!comparisonFieldAdditional"
+        border
+        class="error-notify"
+        type="error"
+        icon="mdi-alert-circle"
+        :title="errorTitle"
+        density="compact"
+        color="#f4154d"
+      >&lt;/v-alert>
+    &lt;/div>
+    &lt;v-btn
+      v-if="query.delete"
+      class="delete-btn animate__fadeInRight animate__animated"
+      icon="mdi-delete"
+      @click="deleteQuery"
+    >
+    &lt;/v-btn>
+  &lt;/div>
+&lt;/template>
+&lt;script>
+import { getLabelsList } from '@/Api'
+
+export default {
+  computed: {
+    chooseDatabaseList() {
+      return [...this.databaseList].filter(item => {
+        return item !== this.item.queries[0].value
+      })
+    },
+    databaseName() {
+      return this.item.queries[0].value
+    },
+    errorTitle() {
+      if (!this.collection) {
+        return 'Collection required!'
+      } else if (this.collection &amp;&amp; !this.comparisonField) {
+        return 'Comparison Field required'
+      }
+      return null
+    },
+  },
+  created() {
+    if (this.query.comparisonFieldMain) {
+      this.comparisonFieldMain = this.query.comparisonFieldMain
+    }
+    if (this.query.comparisonFieldAdditional) {
+      this.comparisonFieldAdditional = this.query.comparisonFieldAdditional
+    }
+    if (this.query.collection) {
+      this.collection = this.query.collection
+    }
+    let parentCollectionName = this.item.queries[0].value
+    getLabelsList(parentCollectionName).then(res => {
+      if (res.status === 200) {
+        this.labelsListMain = Object.keys(res.data.labelsObj)
+        this.savedValuesObj = res.data.labelsObj
+      }
+    })
+  },
+  data() {
+    return {
+      operation: null,
+      collection: null,
+      comparisonFieldMain: null,
+      comparisonFieldAdditional: null,
+      labelsListMain: [],
+      savedValuesObj: [],
+      labelsListAdd: [],
+      savedValuesAdd: [],
+    }
+  },
+  watch: {
+    databaseName: function (newValue) {
+      getLabelsList(newValue).then(res => {
+        if (res.status === 200) {
+          this.labelsListMain = Object.keys(res.data.labelsObj)
+          this.savedValuesObj = res.data.labelsObj
+          this.comparisonFieldMain = null
+          this.comparisonFieldAdditional = null
+          if (newValue === this.collection) {
+            this.collection = null
+          }
+        }
+      })
+    },
+    collection: function (newValue) {
+      getLabelsList(newValue).then(res => {
+        if (res.status === 200) {
+          this.labelsListAdd = Object.keys(res.data.labelsObj)
+          this.savedValuesObjAdd = res.data.labelsObj
+          if (!this.query.comparisonFieldAdditional) {
+            this.comparisonFieldAdditional = null
+          }
+        }
+      })
+      this.changeIntersectCollection(newValue)
+    },
+    comparisonFieldMain: function (newValue) {
+      this.changeIntersectComparisonField(newValue, 'main')
+    },
+    comparisonFieldAdditional: function (newValue) {
+      if (newValue) {
+        this.$store.commit('changeErrorFixed', {
+          id: this.query.queryId,
+          value: true,
+        })
+      } else {
+        this.$store.commit('changeErrorFixed', {
+          id: this.query.queryId,
+          value: false,
+        })
+      }
+      this.changeIntersectComparisonField(newValue, 'add')
+    },
+  },
+  methods: {
+    deleteQuery() {
+      this.$emit('deleteQuery', this.query.queryId, this.item.id)
+    },
+    /**
+     * Функція, що змінює поле collection в об'єкті запиту intersect для об'єкту блока
+     * @param {string} newValue - Нове значення поля collection
+     */
+    changeIntersectCollection(newValue) {
+      this.$emit(
+        'changeIntersectCollection',
+        this.item.id,
+        this.query.queryId,
+        newValue
+      )
+    },
+    changeIntersectComparisonField(newValue, type) {
+      this.$emit(
+        'changeIntersectComparisonField',
+        this.item.id,
+        this.query.queryId,
+        newValue,
+        type
+      )
+    },
+    clearIntersectCollection() {
+      this.collection = null
+      this.comparisonFieldAdditional = null
+      this.сomparisonFieldMain = null
+      this.$emit('clearIntersectCollection', this.item.id, this.query.queryId)
+    },
+    addNewChildQuery(operation) {
+      if (!operation) {
+        return
+      }
+      if (operation === 1) {
+        this.$emit('addNewChildQuery', operation, true)
+      } else {
+        this.$emit('addNewChildQuery', operation, false, this.item.id)
+      }
+      this.operation = null
+      // this.$refs.operationSelect.blur()
+    },
+  },
+  props: {
+    tab: {
+      type: Number,
+    },
+    query: {
+      type: Object,
+    },
+    item: {
+      type: Object,
+    },
+    databaseList: {
+      type: Array,
+    },
+    operatorsList: {
+      type: Array,
+    },
+  },
+}
+&lt;/script>
+&lt;style lang="scss">&lt;/style>
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-limitItem.html">limitItem</a></li><li><a href="module-mainItem.html">mainItem</a></li><li><a href="module-matchItem.html">matchItem</a></li><li><a href="module-projectItem.html">projectItem</a></li><li><a href="module-queryBuilderItem.html">queryBuilderItem</a></li><li><a href="module-sampleItem.html">sampleItem</a></li><li><a href="module-sortItem.html">sortItem</a></li><li><a href="module-subtractItem.html">subtractItem</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Tue May 23 2023 12:17:06 GMT+0300 (Восточная Европа, летнее время)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
