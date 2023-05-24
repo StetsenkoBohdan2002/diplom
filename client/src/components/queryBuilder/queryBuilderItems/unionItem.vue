@@ -58,6 +58,16 @@ export default {
       collection: null,
     }
   },
+  created() {
+    if (this.query.collection) {
+      this.collection = this.query.collection
+    } else {
+      this.$store.commit('changeErrorFixed', {
+        id: this.query.queryId,
+        value: false,
+      })
+    }
+  },
   watch: {
     collection: function (newValue) {
       if (newValue) {

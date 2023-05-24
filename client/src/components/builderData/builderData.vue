@@ -21,7 +21,13 @@
 <script>
 import { getData } from '@/Api.js'
 import noData from '../noData/noData.vue'
-
+/**
+ * Компонент, що відповідає за відображення даних відповідно до побудованого запиту
+ * @vue/component
+ * @module builderData
+ * @requires getData
+ * @requires noData
+ */
 export default {
   name: 'builder-data',
   components: {
@@ -29,6 +35,10 @@ export default {
   },
   data() {
     return {
+      /**
+       * Стан, що відповідає за збереження результатів отримання даних
+       * @type {string|null}
+       */
       saved: null,
     }
   },
@@ -44,8 +54,6 @@ export default {
       },
       0
     )
-    console.log(getCountElements)
-    console.log(getErrorFixed)
     if (
       getCountElements !== getErrorFixed ||
       (!getCountElements && !getErrorFixed)
@@ -54,7 +62,6 @@ export default {
       return
     }
     getData(this.$store.getters.getBuilderData).then(res => {
-      console.log(res)
       this.saved = res.data.queryResult.map(item => {
         item.parse = false
         return item
@@ -63,6 +70,10 @@ export default {
     })
   },
   methods: {
+    /**
+     * Функція, що відповідає за копіювання елементу відповіді до буферу
+     * @param {object} item - Поле, що є об'єктом для копіювання
+     */
     copyItem(item) {
       navigator.clipboard
         .writeText(JSON.stringify(item))
@@ -75,6 +86,10 @@ export default {
           )
         })
     },
+    /**
+     * Функція, що відповідає парсинг об'єкту з рядка до об'єкту та навпаки
+     * @param {object} item - Поле, що є об'єктом для копіювання
+     */
     switchItem(item) {
       item.parse = !item.parse
     },
@@ -94,7 +109,6 @@ export default {
     }
     &__list {
       padding: 20px;
-      overflow: auto;
       height: 100%;
       display: flex;
       flex-direction: column;

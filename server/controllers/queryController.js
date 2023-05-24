@@ -101,11 +101,15 @@ function buildOperation(operationType, operationProperties) {
       return { [`$${operationType}`]: { [operationProperties.label]: operationProperties.sort === '$asc' ? 1 : -1 } };
     case 'subtract':
       return {
-        $project: {
+        $addFields: {
           [operationProperties.newField]: {
             [`$${operationType}`]: [`$${operationProperties.firstValue}`, `$${operationProperties.secondValue}`],
           },
         },
+        // $project:{
+        //   [operationProperties.firstValue]:1,
+        //   [operationProperties.secondValue]:1,
+        // }
       };
     case 'union':
       return {
@@ -117,8 +121,8 @@ function buildOperation(operationType, operationProperties) {
       return {
         $lookup: {
           from: operationProperties.collection,
-          localField: operationProperties.collection,
-          foreignField: operationProperties.collection,
+          localField: operationProperties.comparisonFieldMain,
+          foreignField: operationProperties.comparisonFieldAdditional,
           as: `intersection${parseInt(Date.now() + Math.random() * Math.pow(10, 10))}`,
         },
       };
@@ -203,8 +207,18 @@ const getData = async (req, res, next) => {
             aggregateList.push(operation);
           }
         }
-
+        let findNewField = aggregateList.filter((item) => item['$addFields']);
+        if (findNewField && findNewField.length > 0) {
+          let findProject = aggregateList.find((item) => item['$project']);
+          findNewField.forEach((item) => {
+            let arr = Object.values(Object.values(Object.values(item)[0])[0]).flat();
+            arr.forEach((item)=>{
+              findProject['$project'][item.slice(1)] = 1
+            })
+          });
+        }
         let newList = JSON.parse(JSON.stringify(aggregateList));
+        console.log(aggregateList);
         newList = newList.map((obj) => {
           if ('$lookup' in obj && 'as' in obj['$lookup']) {
             return obj['$lookup']['as'];
@@ -220,30 +234,29 @@ const getData = async (req, res, next) => {
         }
 
         const lookupObjects = [];
+        const addFieldsObjects = [];
         const otherObjects = [];
 
         aggregateList.forEach((obj) => {
           if ('$lookup' in obj) {
             lookupObjects.push(obj);
+          } else if ('$addFields' in obj) {
+            addFieldsObjects.push(obj);
           } else {
             otherObjects.push(obj);
           }
         });
 
-        let newArr = otherObjects.concat(lookupObjects);
+        let newArr = otherObjects.concat(lookupObjects).concat(addFieldsObjects);
         if (JSON.stringify(matchObject['$project']) !== JSON.stringify({})) {
           newArr.push(matchObject);
         }
-        console.log(newArr);
-
-        // console.log(matchObject)
 
         const queryResult = await mongoose.connection.db.collection(databaseFromName).aggregate(newArr).toArray();
 
         resultList.push(...queryResult);
       }
     }
-
     if (resultList.length > 0) {
       res.status(200).json({ message: 'Successfully', queryResult: resultList });
     } else {

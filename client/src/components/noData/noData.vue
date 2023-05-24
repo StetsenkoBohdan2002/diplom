@@ -4,6 +4,11 @@
   </div>
 </template>
 <script>
+/**
+ * Компонент, що відповідає відображення зоображення, що вказує на відсутність даних
+ * @vue/component
+ * @module noData
+ */
 export default {}
 </script>
 <style lang="scss">

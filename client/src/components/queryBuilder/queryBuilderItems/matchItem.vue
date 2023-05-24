@@ -110,11 +110,12 @@ export default {
       return this.item.queries[0].value
     },
     errorTitle() {
+      console.log(this.values)
       if (!this.label) {
         return 'Label required'
       } else if (this.label && !this.type) {
         return 'Operation required'
-      } else if (!this.values) {
+      } else if (!this.values || this.values.length < 1) {
         return 'Values required'
       }
       return null
@@ -221,7 +222,6 @@ export default {
       this.changeMatchLabel(newValue)
     },
     values: function (newValue) {
-      console.log(newValue)
       if (newValue && newValue.length > 0 && !newValue.includes(null)) {
         this.$store.commit('changeErrorFixed', {
           id: this.query.queryId,
@@ -254,6 +254,12 @@ export default {
      * @param {string} newValue - Нове значення поля label
      */
     changeMatchLabel(newValue) {
+      if (!this.query.values) {
+        this.values = null
+      }
+      if (!this.query.type) {
+        this.type = null
+      }
       this.$emit('changeMatchLabel', this.item.id, this.query.queryId, newValue)
     },
     /**
@@ -261,6 +267,9 @@ export default {
      * @param {null|string|Array} newValue - Нове значення поля values
      */
     changeMatchValues(newValue) {
+      if (Array.isArray(this.values) && this.values < 1) {
+        this.values = null
+      }
       if (!this.valueVariant && newValue) {
         this.$emit('changeMatchValues', this.item.id, this.query.queryId, [
           newValue,

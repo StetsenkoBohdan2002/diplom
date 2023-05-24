@@ -100,6 +100,11 @@ export default {
     }
     if (this.query.comparisonFieldAdditional) {
       this.comparisonFieldAdditional = this.query.comparisonFieldAdditional
+    } else {
+      this.$store.commit('changeErrorFixed', {
+        id: this.query.queryId,
+        value: false,
+      })
     }
     if (this.query.collection) {
       this.collection = this.query.collection

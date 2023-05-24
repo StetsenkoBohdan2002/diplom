@@ -10,9 +10,6 @@ const routes = [
   {
     path: '/query-builder',
     name: 'query-builder',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: function () {
       return import('../views/Builder.vue')
     },
@@ -20,9 +17,6 @@ const routes = [
   {
     path: '/saved-queries',
     name: 'saved-queries',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
     component: function () {
       return import('../views/Saved.vue')
     },

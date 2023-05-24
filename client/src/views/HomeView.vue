@@ -11,8 +11,11 @@
 </template>
 
 <script>
-// @ is an alias to /src
-
+/**
+ * Компонент, що відповідає за відображення головної сторінки
+ * @vue/component
+ * @module HomeView
+ */
 export default {
   name: 'HomeView',
   components: {},

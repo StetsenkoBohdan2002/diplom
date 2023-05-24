@@ -8,8 +8,6 @@
       ></v-progress-circular>
     </div>
     <v-layout style="height: 100vh; position: relative; z-index: 998">
-      <!-- <v-system-bar color="deep-purple darken-3"></v-system-bar> -->
-
       <v-app-bar color="#ffa200" prominent>
         <router-link
           to="/"
@@ -103,15 +101,6 @@
             ></v-list-item>
           </router-link>
           <v-divider></v-divider>
-          <router-link to="/about" style="text-decoration: none; color: inherit"
-            ><v-list-item
-              exact
-              prepend-icon="mdi-information"
-              title="About"
-              value="About"
-            ></v-list-item>
-          </router-link>
-          <v-divider></v-divider>
           <router-link
             to="/query-builder"
             style="text-decoration: none; color: inherit"
@@ -143,13 +132,34 @@
 </template>
 <script>
 import { getDatabaseList } from '@/Api.js'
-
+/**
+ * Компонент, що виступає точкою входу для всього веб-сервісу
+ * @vue/component
+ * @module Saved
+ * @requires getDatabaseList
+ */
 export default {
-  data: () => ({
-    currentPage: '',
-    dialog: false,
-    accessDeleteValue: false,
-  }),
+  /**
+   * Обчислювані властивості для компонента, які повертають значення на основі інших властивостей.
+   * @typedef {Object} ComponentComputed
+   * @property {string} loading - Обчислювана властивість, що відповідає за відображення загрузки сторінки
+   * @property {string} disableSave - Обчислювана властивість, що відповідає за доступ до кропки збереження запиту
+   * @property {string} showSaveQueryButton - Обчислювана властивість, що відповідає за відображення кнопки збереження запиту
+   */
+  data() {
+    return {
+      /**
+       * Стан, що відповідає за зберігання поточної сторінки
+       * @type {string}
+       */
+      currentPage: '',
+      /**
+       * Стан, що відповідає за відображення модального вікна збереження запиту
+       * @type {boolean}
+       */
+      dialog: false,
+    }
+  },
   created() {
     getDatabaseList().then(res => {
       if (res.status === 200) {
@@ -169,6 +179,9 @@ export default {
     }
   },
   methods: {
+    /**
+     * Функція, що відповідає за прикидування події вище та збереження запиту
+     */
     handleNewQuery() {
       this.$store.commit('changeAccessSaving')
       let builderDataLocal = JSON.parse(localStorage['builderData'])
@@ -177,12 +190,21 @@ export default {
       }
       this.dialog = false
     },
+    /**
+     * Функція, що відповідає за відображення кнопок видалення
+     */
     accessDelete() {
       this.$store.commit('changeAccessDeleteValue')
     },
+    /**
+     * Функція, що відповідає за встановлення назви запиту для збереження
+     */
     changeQueryName(event) {
       this.$store.commit('changeQueryName', event.target.value)
     },
+    /**
+     * Функція, що відповідає за закриття модального вікна для збереження запиту
+     */
     closeQueryModal() {
       this.$store.commit('changeQueryName', null)
       this.dialog = false
@@ -197,11 +219,6 @@ export default {
     },
     showSaveQueryButton() {
       return this.$route.path === '/query-builder'
-    },
-  },
-  watch: {
-    group() {
-      this.drawer = false
     },
   },
 }
@@ -290,5 +307,8 @@ nav {
   color: #fff;
   width: 42px !important;
   height: 42px !important;
+}
+.v-tabs {
+  box-shadow: 0 0 5px rgba(37, 37, 37, 0.192);
 }
 </style>

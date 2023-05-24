@@ -71,18 +71,45 @@
 <script>
 import { deleteSavedQuery, getSavedQueries } from '@/Api.js'
 import noData from '../noData/noData.vue'
+/**
+ * Компонент, що відповідає за відображення збережених шаблонів операцій
+ * @vue/component
+ * @module savedQueries
+ * @requires deleteSavedQuery
+ * @requires getSavedQueries
+ * @requires noData
+ */
 let timer
 export default {
   components: { noData },
   data() {
     return {
+      /**
+       * Стан, що відповідає за збереження даних з серверу по отриманню збережених шаблонів запитів
+       * @type {Array}
+       */
       queries: [],
+      /**
+       * Стан, що відповідає за збереження відсортованих даних, в залежноті від дати та поля пошуку
+       * @type {object|null}
+       */
       sortedData: [],
+      /**
+       * Стан, що відповідає варіант сортування
+       * @type {object|null}
+       */
       sortBy: 'New',
+      /**
+       * Стан, що відповідає за збереження поля пошуку
+       * @type {object|null}
+       */
       searchLine: '',
     }
   },
   methods: {
+    /**
+     * Функція, що відповідає за пошук по полю searchLine
+     */
     searchByName() {
       clearTimeout(timer)
       timer = setTimeout(() => {
@@ -91,8 +118,10 @@ export default {
         )
       }, 500)
     },
+    /**
+     * Функція, що відповідає за сортування даних по полю sortBy
+     */
     sortData() {
-      console.log(1)
       if (this.sortBy === 'New') {
         this.sortedData = [...this.queries].sort((a, b) => {
           const dateA = new Date(a.created_date)
@@ -100,7 +129,6 @@ export default {
           return dateA - dateB
         })
       } else {
-        console.log(1)
         this.sortedData = [...this.queries].sort((a, b) => {
           const dateA = new Date(a.created_date)
           const dateB = new Date(b.created_date)
@@ -108,22 +136,33 @@ export default {
         })
       }
     },
+    /**
+     * Функція, що відповідає за копіювання відповідного запиту
+     * @param {Object} data - Ідентифікатор відповідного блоку, в якому знаходиться запит
+     */
     copyQuery(data) {
       localStorage['builderData'] = data.query
       this.$store.commit('setBuilderData', JSON.parse(data.query))
       this.$router.push({ path: '/query-builder' })
     },
+    /**
+     * Функція, що видаляє повністю збережений запит
+     * @param {object} query - Запит який буде видалено
+     */
     deleteQuery(query) {
       this.$store.commit('changeLoading')
       deleteSavedQuery(query._id).then(res => {
         if (res.status === 200) {
-          console.log(res)
           this.queries = res.data.queries
           this.sortedData = res.data.queries
         }
         this.$store.commit('changeLoading')
       })
     },
+    /**
+     * Функція, що форматує дату для коректного відображення
+     * @param {string} date - Поле з датою
+     */
     updateDate(date) {
       const options = {
         day: 'numeric',
@@ -139,7 +178,6 @@ export default {
     this.$store.commit('changeLoading')
     getSavedQueries().then(res => {
       if (res.status === 200) {
-        console.log(res.data.queries)
         this.queries = res.data.queries
         if (this.sortBy === 'New') {
           this.sortedData = res.data.queries.sort((a, b) => {
