@@ -1,13 +1,13 @@
 import { getPropertiesHierarchy } from '../getPropertiesHierarchy.js'; // Замініть на відповідний імпорт вашого файлу з функцією
 
 describe('getPropertiesHierarchy', () => {
-  it('should return an empty object for an empty input object', () => {
+  it('Має повертати порожній об’єкт для порожнього вхідного об’єкта', () => {
     const obj = {};
     const result = getPropertiesHierarchy(obj);
     expect(result).toEqual({});
   });
 
-  it('should correctly build the properties hierarchy for a nested object', () => {
+  it('Має правильно побудувати ієрархію властивостей для вкладеного об’єкта', () => {
     const obj = {
       level1: {
         level2: {
@@ -24,7 +24,7 @@ describe('getPropertiesHierarchy', () => {
     expect(result).toEqual(expected);
   });
 
-  it('should correctly handle arrays in the input object', () => {
+  it('Має правильно обробляти масиви у вхідному об’єкті', () => {
     const obj = {
       arrayProp: [
         {
@@ -44,7 +44,7 @@ describe('getPropertiesHierarchy', () => {
     expect(result).toEqual(expected);
   });
 
-  it('should handle multiple levels of nested arrays', () => {
+  it('Повинен обробляти кілька рівнів вкладених масивів', () => {
     const obj = {
       array1: [
         {

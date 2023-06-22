@@ -1,4 +1,5 @@
 <template>
+  <!-- Репозиторій проект: https://github.com/StetsenkoBohdan2002/diplom -->
   <div class="query-item" :style="{ 'padding-left': tab * 40 + 'px' }">
     <main-item
       @addNewChildQuery="addNewChildQuery"
@@ -423,5 +424,13 @@ export default {
     margin-right: 10px;
     background-color: rgb(20, 243, 187);
   }
+}
+.delete-btn {
+  width: 10%;
+  justify-self: end;
+  background-color: rgb(244, 21, 77);
+  color: #fff;
+  width: 42px !important;
+  height: 42px !important;
 }
 </style>

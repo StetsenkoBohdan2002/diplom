@@ -102,7 +102,6 @@ export default createStore({
       state.globalError = value
     },
     changeErrorFixed(state, obj) {
-      console.log(obj)
       const findItem = state.errorFixed.find(item => {
         return item.id === obj.id
       })

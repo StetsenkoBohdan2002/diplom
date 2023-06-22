@@ -1,3 +1,4 @@
+// Репозиторій проект: https://github.com/StetsenkoBohdan2002/diplom
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import express from 'express';

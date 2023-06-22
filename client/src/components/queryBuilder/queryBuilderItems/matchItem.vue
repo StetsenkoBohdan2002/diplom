@@ -110,7 +110,6 @@ export default {
       return this.item.queries[0].value
     },
     errorTitle() {
-      console.log(this.values)
       if (!this.label) {
         return 'Label required'
       } else if (this.label && !this.type) {
@@ -127,6 +126,14 @@ export default {
       this.label = this.query.label
     }
     if (this.query.operation) {
+      if (
+        this.query.operation === '$in' ||
+        this.query.operation === '$not_in'
+      ) {
+        this.valueVariant = true
+      } else {
+        this.valueVariant = false
+      }
       this.type = this.query.operation
     }
     if (this.query.values) {
@@ -270,7 +277,7 @@ export default {
       if (Array.isArray(this.values) && this.values < 1) {
         this.values = null
       }
-      if (!this.valueVariant && newValue) {
+      if (!this.valueVariant && newValue && !Array.isArray(newValue)) {
         this.$emit('changeMatchValues', this.item.id, this.query.queryId, [
           newValue,
         ])

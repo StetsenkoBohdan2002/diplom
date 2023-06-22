@@ -1,4 +1,5 @@
 <template>
+  <!-- Репозиторій проект: https://github.com/StetsenkoBohdan2002/diplom -->
   <div class="saved-wrapper">
     <div class="saved-func">
       <v-select

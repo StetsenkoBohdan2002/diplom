@@ -25,6 +25,7 @@ const createNewQueryService = async (body) => {
     const newQuery = new Query({
       name,
       queryList,
+      created_date: new Date(Date.now()).toISOString(),
       query: JSON.stringify(body.data),
     });
     await newQuery.save();

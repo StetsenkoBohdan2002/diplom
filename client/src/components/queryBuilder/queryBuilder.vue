@@ -1,4 +1,5 @@
 <template>
+  <!-- Репозиторій проект: https://github.com/StetsenkoBohdan2002/diplom -->
   <div class="query-builder">
     <Transition name="alert">
       <v-alert
@@ -71,8 +72,6 @@ export default {
         },
         0
       )
-      console.log(getCountElements)
-      console.log(getErrorFixed)
       if (getCountElements !== getErrorFixed) {
         this.$store.commit('changeDisableSaving')
         this.setNotify(true, 'ERROR', 'Errors in your query!', 'error')
@@ -101,7 +100,6 @@ export default {
     },
     deleteQuery(queryId, parentId) {
       const findItemById = this.getParentQuery(parentId)
-      console.log(findItemById)
       const findQuery = this.getQueryFromParent(findItemById, queryId)
       if (findQuery.type === 'from') {
         if (this.builderData.length === 1) {
@@ -113,6 +111,16 @@ export default {
             false
           )
         } else {
+          this.builderData.forEach(item => {
+            if (item.id === parentId) {
+              for (let index = 0; index < item.queries.length; index++) {
+                this.$store.commit('changeErrorFixed', {
+                  id: item.queries[index].queryId,
+                  value: false,
+                })
+              }
+            }
+          })
           this.builderData = this.builderData.filter(item => {
             if (item.id !== parentId) {
               return item
@@ -131,6 +139,7 @@ export default {
         id: queryId,
         value: false,
       })
+
       this.$store.commit('setBuilderData', this.builderData)
     },
     changeMatchLabel(parentId, queryId, newValue) {

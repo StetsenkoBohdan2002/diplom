@@ -30,7 +30,7 @@ describe('getLabelsListService', () => {
     await mongoServer.stop();
   });
 
-  it("Повинно повертати об'єкт міток", async () => {
+  it("Повинно повертати об'єкт полів з колекції", async () => {
     const req = {
       params: {
         collectionName: 'testCollection',
@@ -43,7 +43,7 @@ describe('getLabelsListService', () => {
     expect(labelsObj).toEqual({});
   });
 
-  it("Повинно повертати сплющений об'єкт міток без дублікатів", async () => {
+  it("Повинно повертати сплющений об'єкт полів без дублікатів", async () => {
     const req = {
       params: {
         collectionName: 'testCollection',

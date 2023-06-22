@@ -2,7 +2,7 @@
   "plugins": ["plugins/markdown", "node_modules/jsdoc-vuejs"],
   "source": {
     "include": ["src"],
-    "includePattern": ".+\\.vue$",
+    "includePattern": ".+\\.js(doc|x)?$|.vue$",
     "excludePattern": "(^|\\/|\\\\)_(?!lang|socket)"
   },
   "tags": {

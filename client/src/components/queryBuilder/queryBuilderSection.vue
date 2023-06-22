@@ -1,4 +1,5 @@
 <template>
+  <!-- Репозиторій проект: https://github.com/StetsenkoBohdan2002/diplom -->
   <div class="query-section">
     <query-builder-item
       v-for="(item, index) in section.queries"

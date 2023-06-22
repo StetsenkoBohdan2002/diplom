@@ -1,4 +1,5 @@
 <template>
+  <!-- Репозиторій проект: https://github.com/StetsenkoBohdan2002/diplom -->
   <v-card>
     <div class="loader" v-if="loading">
       <v-progress-circular
@@ -135,7 +136,7 @@ import { getDatabaseList } from '@/Api.js'
 /**
  * Компонент, що виступає точкою входу для всього веб-сервісу
  * @vue/component
- * @module Saved
+ * @module App
  * @requires getDatabaseList
  */
 export default {
@@ -300,14 +301,6 @@ nav {
   }
 }
 
-.delete-btn {
-  width: 10%;
-  justify-self: end;
-  background-color: rgb(244, 21, 77);
-  color: #fff;
-  width: 42px !important;
-  height: 42px !important;
-}
 .v-tabs {
   box-shadow: 0 0 5px rgba(37, 37, 37, 0.192);
 }

@@ -1,4 +1,5 @@
 <template>
+  <!-- Репозиторій проект: https://github.com/StetsenkoBohdan2002/diplom -->
   <div class="builder-data">
     <h1 class="builder-data__title">Result:</h1>
     <div class="builder-data__list" v-if="saved">
@@ -99,7 +100,7 @@ export default {
 <style lang="scss">
 .builder {
   &-data {
-    height: calc(100vh - 96px);
+    height: calc(100vh - 160px);
     overflow: auto;
     &__empty {
       height: 80%;
@@ -108,6 +109,7 @@ export default {
       padding-top: 20px;
     }
     &__list {
+      /* overflow: auto; */
       padding: 20px;
       height: 100%;
       display: flex;
